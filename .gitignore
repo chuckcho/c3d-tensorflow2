@@ -1,3 +1,17 @@
+*.swp
+
+models/c3d_weights.npy
+models/conv3d_deepnetA_sport1m_iter_1900000
+
+
+
+
+
+
+
+
+
+#---------------------------------------------------------------------
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]

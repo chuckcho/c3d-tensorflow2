@@ -1,24 +1,10 @@
 name: "DeepConv3DNet_ucf101_finetuning"
-layers {
-  name: "data"
-  type: VIDEO_DATA
-  top: "data"
-  top: "label"
-  image_data_param {
-    source: "train_01.lst"
-    use_image: true
-    mean_file: "train01_16_128_171_mean.binaryproto"
-    use_temporal_jitter: false
-    batch_size: 30
-    crop_size: 112
-    mirror: true
-    show_data: 0
-    new_height: 128
-    new_width: 171
-    new_length: 16
-    shuffle: true
-  }
-}
+input: "data"
+input_dim: 30
+input_dim: 3
+input_dim: 16
+input_dim: 112
+input_dim: 112
 # ----------- 1st layer group ---------------
 layers {
   name: "conv1a"
@@ -435,9 +421,8 @@ layers {
   }
 }
 layers {
-  name: "loss"
-  type: SOFTMAX_LOSS
+  name: "prob"
+  type: SOFTMAX
   bottom: "fc8"
-  bottom: "label"
+  top: "prob"
 }
-
