@@ -9,7 +9,7 @@ def inference(video, net_data, keep_prob, tag=''):
     """Build the inference for one single channel.
 
     Args:
-        video: 5D tensor: [batch_size, temporal_size, image_size, image_size, 3]
+        video: 5D tensor: [batch_size, 3, temporal_size, image_size, image_size]
         net_data: pretrained weights from AlexNet
         keep_prob: Tensor, 0.5 if training, 1.0 otherwise
 
