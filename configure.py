@@ -19,7 +19,7 @@ PTH_CATEGORIES  = os.path.join(DIR_LST, 'categories')
 
 # Models
 PTH_WEIGHT_C3D  = os.path.join(DIR_MODEL, 'c3d_weights.npy')
-PTH_MEAN_IMG    = os.path.join(DIR_MODEL, 'train01_16_128_171_mean.binaryproto')
+PTH_MEAN_IMG    = os.path.join(DIR_MODEL, 'train01_16_128_171_mean.npy')
 
 
 # Categories
