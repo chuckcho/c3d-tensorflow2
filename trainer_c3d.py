@@ -52,8 +52,8 @@ def do_eval(sess, eval_correct, videos_ph, labels_ph, keep_prob_ph, all_data, al
         stop_idx = common.next_batch(indices, start_idx, FLAGS.batch_size)
         batch_idx = indices[start_idx:stop_idx]
         fd = fill_feed_dict(
-                all_data[batch_idx], all_labels[batch_idx],
-                videos_ph, labels_ph, keep_prob_ph, is_training=False)
+            all_data[batch_idx], all_labels[batch_idx],
+            videos_ph, labels_ph, keep_prob_ph, is_training=False)
         true_count += sess.run(eval_correct, feed_dict=fd)
         start_idx = stop_idx
 
@@ -63,7 +63,7 @@ def do_eval(sess, eval_correct, videos_ph, labels_ph, keep_prob_ph, all_data, al
 
 
 #=========================================================================================
-def run_training(tag):
+def run_training(pth_train_lst, train_dir, pth_eval_lst, eval_dir, tag):
     logfile = open(os.path.join(cfg.DIR_LOG, 'training_'+tag+'.log'), 'w', 0)
 
     # load data
@@ -71,15 +71,16 @@ def run_training(tag):
     net_data = np.load(cfg.PTH_WEIGHT).item()
 
     print 'Loading lists...'
-    with open(train_lst, 'r') as f: train_lst = f.read().splitlines()
-    with open(eval_lst,  'r') as f: eval_lst  = f.read().splitlines()
+    with open(pth_train_lst, 'r') as f: train_lst = f.read().splitlines()
+    with open(pth_eval_lst,  'r') as f: eval_lst  = f.read().splitlines()
+    train_lst = train_lst[:1000]; eval_lst = eval_lst[:1000] # FIXME: remove this line
     
     print 'Loading training data...'
-    train_data, train_labels = common.load_videos(train_lst, train_dir, cfg.CLASSES) #TODO
+    train_data, train_labels = common.load_frames(train_lst, train_dir)
     num_train = len(train_data)
 
     print 'Loading validation data...'
-    eval_data, eval_labels = common.load_video(eval_lst, eval_dir, cfg.CLASSES)
+    eval_data, eval_labels = common.load_frames(eval_lst, eval_dir)
 
     # tensorflow variables and operations
     print 'Preparing tensorflow...'
@@ -173,8 +174,12 @@ def run_training(tag):
 
 #=========================================================================================
 def main(argv=None):
+    pth_train_lst = cfg.PTH_TRAIN_LST
+    pth_eval_lst  = cfg.PTH_EVAL_LST
+    train_dir = cfg.DIR_DATA
+    eval_dir  = cfg.DIR_DATA
     with tf.Graph().as_default():
-        run_training(tag='c3d')
+        run_training(pth_train_lst, train_dir, pth_eval_ls, eval_dir, tag='c3d')
     return
 
 
