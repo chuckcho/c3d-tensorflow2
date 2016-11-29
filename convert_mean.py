@@ -1,6 +1,6 @@
 import caffe
 import numpy as np
-import os, ipdb
+import os
 
 
 DIR_MODEL = 'models'

@@ -1,7 +1,6 @@
-import numpy as np
 import cv2
 import configure as cfg
-import os, glob, ipdb
+import os
 
 
 def create_dirs():
@@ -38,7 +37,7 @@ def preprocess():
 
             # resize and write frame
             frame = cv2.resize(frame, newsize, interpolation=cv2.INTER_CUBIC)
-            frame_file = os.path.join(pth, '{0:06d}.jpg'.format(frameid+1))
+            frame_file = os.path.join(pth, cfg.IMAGE_FORMAT.format(frameid+1))
             cv2.imwrite(frame_file, frame)
             frameid += 1
         cap.release()

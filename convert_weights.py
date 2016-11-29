@@ -1,6 +1,6 @@
 import caffe
 import numpy as np
-import os, ipdb
+import os
 
 
 DIR_MODEL = 'models'
@@ -12,6 +12,13 @@ output = os.path.join(DIR_MODEL, 'c3d_weights.npy')
 
 
 if __name__ == '__main__':
+    # Per https://www.tensorflow.org/versions/r0.11/api_docs/python/nn.html#conv3d
+    # Filter has shape: [filter_depth, filter_height, filter_width, in_channels, out_channels]
     net = caffe.Net(model, weights)
-    netdata = {layer: (net.params[layer][0].data, net.params[layer][1].data) for layer in layers}
+    netdata = {
+            layer: (
+                    np.transpose(net.params[layer][0].data, (2, 4, 3, 1, 0)),
+                    np.squeeze(net.params[layer][1].data)
+                    ) for layer in layers
+            }
     np.save(output, netdata)
