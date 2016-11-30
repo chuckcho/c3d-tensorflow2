@@ -158,11 +158,11 @@ def loss(logits, labels, tag):
     """Return the loss as categorical cross-entropy
 
     Args:
-        prob: results from inference
-        labels: 2D Tensor [batch_size, n_classes], 1 if object in that class, 0 otherwise
+        logits: Logits tensor, float - [batch_size, NUM_CLASSES].
+        labels: Labels tensor, int32 - [batch_size]
 
     Returns:
-        loss: categorical crossentropy loss
+        loss: Loss tensor of type float.
     """
     tag += '_'
 
@@ -182,8 +182,11 @@ def loss(logits, labels, tag):
     regularizers = tf.nn.l2_loss(fc7W) + tf.nn.l2_loss(fc7b) + tf.nn.l2_loss(fc8W) + tf.nn.l2_loss(fc8b)
     loss += 5e-4 * regularizers
     '''
+
     cross_entropy = tf.nn.sparse_softmax_cross_entropy_with_logits(
-            logits, labels, name='xentropy')
+            logits,
+            labels,
+            name='xentropy')
     loss = tf.reduce_mean(cross_entropy, name='xentropy_mean')
 
     return loss
@@ -219,13 +222,13 @@ def evaluation(logits, labels):
     labels: Labels tensor, int32 - [batch_size], with values in the
       range [0, NUM_CLASSES).
   Returns:
-    A scalar int32 tensor with the number of examples (out of batch_size)
-    that were predicted correctly.
+    A int32 tensor with each entry being 0 (predicted incorrectly)
+    or 1 (predicted correctly)
   """
   # For a classifier model, we can use the in_top_k Op.
   # It returns a bool tensor with shape [batch_size] that is true for
   # the examples where the label is in the top k (here k=1)
   # of all logits for that example.
   correct = tf.nn.in_top_k(logits, labels, 1)
-  # Return the number of true entries.
-  return tf.reduce_sum(tf.cast(correct, tf.int32))
+  # Return the true entries.
+  return tf.cast(correct, tf.int32)

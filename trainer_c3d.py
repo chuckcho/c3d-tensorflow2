@@ -22,9 +22,8 @@ tf.app.flags.DEFINE_integer('checkpoint_frequency', 10, """How often to evaluate
 def placeholder_inputs(batch_size):
     # Per https://www.tensorflow.org/versions/r0.11/api_docs/python/nn.html#conv3d
     # input: A Tensor with shape [batch, in_depth, in_height, in_width, in_channels].
-    videos_ph = tf.placeholder(tf.float32, shape=(batch_size, FLAGS.time_s, FLAGS.img_s, FLAGS.img_s, 3), name='videos_placeholder')
-    #labels_ph = tf.placeholder(tf.int32, shape=(batch_size, FLAGS.n_classes), name='labels_placeholder')
-    labels_ph = tf.placeholder(tf.int32, shape=(batch_size), name='labels_placeholder')
+    videos_ph = tf.placeholder(tf.float32, shape=(None, FLAGS.time_s, FLAGS.img_s, FLAGS.img_s, 3), name='videos_placeholder')
+    labels_ph = tf.placeholder(tf.int32, shape=(None), name='labels_placeholder')
     keep_prob_ph = tf.placeholder(tf.float32, shape=(), name='keep_prob_placeholder')
 
     return videos_ph, labels_ph, keep_prob_ph
@@ -41,11 +40,15 @@ def fill_feed_dict(videos_batch, labels_batch, videos_ph, labels_ph, keep_prob_p
     if is_training:
         feed_dict = {\
                 videos_ph: common.crop_clips(video_data, random_crop=True), \
-                labels_ph: labels_batch, keep_prob_ph: 0.5}
+                labels_ph: labels_batch,
+                keep_prob_ph: 0.5
+                }
     else:
         feed_dict = {\
                 videos_ph: common.crop_clips(video_data, random_crop=False), \
-                labels_ph: labels_batch, keep_prob_ph: 1.0}
+                labels_ph: labels_batch,
+                keep_prob_ph: 1.0
+                }
     return feed_dict
 
 
@@ -59,7 +62,11 @@ def do_eval(sess, eval_correct, videos_ph, labels_ph, keep_prob_ph, all_data, al
         fd = fill_feed_dict(
             slice_list(all_data,batch_idx), all_labels[batch_idx],
             videos_ph, labels_ph, keep_prob_ph, is_training=False)
-        true_count += sess.run(eval_correct, feed_dict=fd)
+        tmp_ = sess.run(eval_correct, feed_dict=fd)
+        num_valid = stop_idx - start_idx
+        tmp_ = tmp_[0:num_valid]
+        true_count_this_session = sess.run(tf.reduce_sum(tmp_))
+        true_count += true_count_this_session
         start_idx = stop_idx
 
     precision = true_count*1.0 / num_samples
@@ -110,7 +117,6 @@ def run_training(pth_train_lst, train_dir, pth_eval_lst, eval_dir, tag):
     videos_ph, labels_ph, keep_prob_ph = placeholder_inputs(FLAGS.batch_size)
 
     logits = model.inference(videos_ph, net_data, keep_prob_ph, tag)
-    print "logits={}, labels_ph={}".format(logits, labels_ph)
     loss = model.loss(logits, labels_ph, tag)
     train_op = model.training(loss, learning_rate=FLAGS.learning_rate)
 
@@ -170,11 +176,7 @@ def run_training(pth_train_lst, train_dir, pth_eval_lst, eval_dir, tag):
         # write checkpoint---------------------------------------------
         if step % FLAGS.checkpoint_frequency == 0 or (step+1) == FLAGS.max_iter:
             checkpoint_file = os.path.join(cfg.DIR_CKPT, tag)
-            print "[Debug] checkpoint_file={}, step={}".format(
-                    checkpoint_file,
-                    step,
-                    )
-            #saver.save(sess, checkpoint_file. global_step=step)
+            saver.save(sess, checkpoint_file, global_step=step)
 
             common.writer('  Training data eval:', (), logfile)
             do_eval(
@@ -190,7 +192,12 @@ def run_training(pth_train_lst, train_dir, pth_eval_lst, eval_dir, tag):
             common.writer('Precision: %.4f', precision, logfile)
 
         # early stopping-------------------------------------------------
-        to_stop, patience_count = common.early_stopping(old_precision, precision, patience_count)
+        to_stop, patience_count = common.early_stopping(
+                old_precision,
+                precision,
+                patience_count,
+                patience_limit=99999
+                )
         old_precision = precision
         if to_stop:
             common.writer('Early stopping...', (), logfile)
