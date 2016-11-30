@@ -83,7 +83,7 @@ def run_training(pth_train_lst, train_dir, pth_eval_lst, eval_dir, tag):
         os.makedirs(cfg.DIR_LOG)
     if not os.path.exists(cfg.DIR_CKPT):
         os.makedirs(cfg.DIR_CKPT)
-    subsample_rate = 1000
+    subsample_rate = 10
 
     logfile = open(os.path.join(cfg.DIR_LOG, 'training_'+tag+'.log'), 'w', 0)
 
