@@ -9,7 +9,7 @@ import configure as cfg
 # model parameters
 FLAGS = tf.app.flags.FLAGS
 tf.app.flags.DEFINE_integer('max_iter', 20000, """Maximum number of training iteration.""")
-tf.app.flags.DEFINE_integer('batch_size', 10, """Numer of videos to process in a batch.""")
+tf.app.flags.DEFINE_integer('batch_size', 10, """Number of videos to process in a batch.""")
 tf.app.flags.DEFINE_integer('img_s', cfg.IMG_S, """"Size of a square image.""")
 tf.app.flags.DEFINE_integer('time_s', cfg.TIME_S, """Temporal length.""")
 tf.app.flags.DEFINE_integer('n_classes', 101, """Number of classes.""")
