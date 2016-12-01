@@ -10,7 +10,7 @@ wget \
   --directory-prefix=${DIR}
 
 echo ---------------------------------------------
-echo Downloading mean cube
+echo Downloading mean cube...
 wget \
   -nc \
   https://github.com/facebook/C3D/raw/master/examples/c3d_finetuning/train01_16_128_171_mean.binaryproto \
