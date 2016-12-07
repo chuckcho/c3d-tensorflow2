@@ -142,11 +142,12 @@ def inference(video, net_data, keep_prob, tag=''):
         fc8W = tf.squeeze(
             tf.Variable(net_data['fc8'][0], name='weight'), [0, 3, 4])
         fc8B = tf.Variable(net_data['fc8'][1], name='biases')
-        fc8 = tf.nn.relu_layer(fc7_drop, fc8W, fc8B, name=scope)
-        fc8_drop = tf.nn.dropout(fc8, keep_prob=keep_prob, name='drop')
+        #fc8 = tf.nn.relu_layer(fc7_drop, fc8W, fc8B, name=scope)
+        #fc8_drop = tf.nn.dropout(fc8, keep_prob=keep_prob, name='drop')
 
     # Return logits before softmax
-    logits = fc8_drop
+    #logits = fc8_drop
+    logits = tf.matmul(fc7_drop, fc8W) + fc8B
 
     # Skipping softmax layer
     # prob = tf.nn.softmax(fc8_drop, name='prob')
