@@ -274,8 +274,9 @@ def run_training(
                     eval_subsample_rate=eval_subsample_rate)
 
             stop_idx = common.next_batch(num_train, start_idx, FLAGS.batch_size)
-            print "[Info] iteration {}: training {}/{} examples".format(
+            print "[Info] iteration {} (epoch {}): training {}/{} examples".format(
                 iters,
+                epoch,
                 stop_idx,
                 num_train)
             batch_idx = indices[start_idx:stop_idx]
