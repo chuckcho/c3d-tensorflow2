@@ -288,6 +288,7 @@ def run_training(
                 saver.save(sess, checkpoint_file, global_step=epoch)
 
         # Early stop
+        '''
         to_stop, patience_count = common.early_stopping(
                 old_precision,
                 precision,
@@ -299,6 +300,7 @@ def run_training(
         if to_stop:
             common.writer("[Info] early stopping...", (), logfile)
             break
+        '''
     logfile.close()
     return
 
