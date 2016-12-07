@@ -34,6 +34,9 @@ tf.app.flags.DEFINE_integer(
 tf.app.flags.DEFINE_integer(
     'validation_frequency', 100,
     "How often in iteraions to evaluate.")
+tf.app.flags.DEFINE_boolean(
+    'validation_at_start', False,
+    "Whether to run validation at iter 0, or not.")
 
 def placeholder_inputs(batch_size):
     # Per https://www.tensorflow.org/versions/r0.11/api_docs/python/nn.html#conv3d
@@ -245,6 +248,31 @@ def run_training(
         # Train for one epoch
         total_loss, start_idx = 0.0, 0
         while start_idx < num_train:
+
+            if iters % FLAGS.validation_frequency == 0 or \
+                (FLAGS.validation_at_start and iters == 0):
+                common.writer("[Info] training eval:", (), logfile, no_newline=True)
+                do_eval(sess,
+                        eval_correct,
+                        videos_ph,
+                        labels_ph,
+                        keep_prob_ph,
+                        train_clips,
+                        train_labels,
+                        logfile,
+                        eval_subsample_rate=eval_subsample_rate)
+                common.writer("[Info] validation eval:", (), logfile, no_newline=True)
+                precision = do_eval(
+                    sess,
+                    eval_correct,
+                    videos_ph,
+                    labels_ph,
+                    keep_prob_ph,
+                    eval_clips,
+                    eval_labels,
+                    logfile,
+                    eval_subsample_rate=eval_subsample_rate)
+
             stop_idx = common.next_batch(num_train, start_idx, FLAGS.batch_size)
             print "[Info] iteration {}: training {}/{} examples".format(
                 iters,
@@ -274,29 +302,6 @@ def run_training(
                 summary_writer.add_summary(summary_str, epoch)
                 summary_writer.flush()
                 start_time = time.time()
-
-            if iters % FLAGS.validation_frequency == 0:
-                common.writer("[Info] training eval:", (), logfile, no_newline=True)
-                do_eval(sess,
-                        eval_correct,
-                        videos_ph,
-                        labels_ph,
-                        keep_prob_ph,
-                        train_clips,
-                        train_labels,
-                        logfile,
-                        eval_subsample_rate=eval_subsample_rate)
-                common.writer("[Info] validation eval:", (), logfile, no_newline=True)
-                precision = do_eval(
-                    sess,
-                    eval_correct,
-                    videos_ph,
-                    labels_ph,
-                    keep_prob_ph,
-                    eval_clips,
-                    eval_labels,
-                    logfile,
-                    eval_subsample_rate=eval_subsample_rate)
 
             # Write checkpoint
             if iters % FLAGS.checkpoint_frequency == 0 or \

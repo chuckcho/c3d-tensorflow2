@@ -120,8 +120,7 @@ def inference(video, net_data, keep_prob, tag=''):
 
     # Fc6 layer
     with tf.name_scope(tag+'fc6') as scope:
-        fc6W = tf.squeeze(
-            tf.Variable(net_data['fc6'][0], name='weight'), [0, 3, 4])
+        fc6W = tf.Variable(net_data['fc6'][0], name='weight')
         fc6B = tf.Variable(net_data['fc6'][1], name='biases')
         fc6_in = tf.reshape(
             maxpool5,
@@ -131,16 +130,14 @@ def inference(video, net_data, keep_prob, tag=''):
 
     # Fc7 layer
     with tf.name_scope(tag+'fc7') as scope:
-        fc7W = tf.squeeze(
-            tf.Variable(net_data['fc7'][0], name='weight'), [0, 3, 4])
+        fc7W = tf.Variable(net_data['fc7'][0], name='weight')
         fc7B = tf.Variable(net_data['fc7'][1], name='biases')
         fc7 = tf.nn.relu_layer(fc6_drop, fc7W, fc7B, name=scope)
         fc7_drop = tf.nn.dropout(fc7, keep_prob=keep_prob, name='drop')
 
     # Fc8 layer
     with tf.name_scope(tag+'fc8') as scope:
-        fc8W = tf.squeeze(
-            tf.Variable(net_data['fc8'][0], name='weight'), [0, 3, 4])
+        fc8W = tf.Variable(net_data['fc8'][0], name='weight')
         fc8B = tf.Variable(net_data['fc8'][1], name='biases')
         #fc8 = tf.nn.relu_layer(fc7_drop, fc8W, fc8B, name=scope)
         #fc8_drop = tf.nn.dropout(fc8, keep_prob=keep_prob, name='drop')

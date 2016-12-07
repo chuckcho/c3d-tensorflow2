@@ -34,7 +34,10 @@ def main():
         print "{}: w_shape, b_shape={}, {}".format(layer, net.params[layer][0].data.shape, net.params[layer][1].data.shape)
         # per https://github.com/tensorflow/tensorflow/blob/master/tensorflow/g3doc/api_docs/python/functions_and_classes/shard5/tf.nn.conv3d.md
         # filter: A Tensor. Must have the same type as input. Shape [filter_depth, filter_height, filter_width, in_channels, out_channels]. in_channels must match between input and filter.
-        w = np.transpose(net.params[layer][0].data, (2, 4, 3, 1, 0))
+        if 'conv' in layer:
+            w = np.transpose(net.params[layer][0].data, (2, 3, 4, 1, 0))
+        elif 'fc' in layer:
+            w = net.params[layer][0].data[0, 0, 0, :, :].T
         b = np.squeeze(net.params[layer][1].data)
         netdata.update({layer: (w, b)})
     np.save(output, netdata)
