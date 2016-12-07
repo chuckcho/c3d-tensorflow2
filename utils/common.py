@@ -3,10 +3,14 @@ import numpy as np
 import configure as cfg
 import random
 
-def writer(msg, params, f):
+def writer(msg, params, f, no_newline=False):
     formatted_msg = msg % params
-    print formatted_msg
-    f.write(formatted_msg + '\n')
+    if no_newline:
+        print formatted_msg,
+        f.write(formatted_msg)
+    else:
+        print formatted_msg
+        f.write(formatted_msg + '\n')
     return
 
 def next_batch(num_samples, start_idx, batch_size):

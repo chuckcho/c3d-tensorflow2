@@ -14,7 +14,7 @@ import configure as cfg
 # Training parameters
 FLAGS = tf.app.flags.FLAGS
 tf.app.flags.DEFINE_integer(
-    'max_epoch', 10, "Maximum number of training epochs.")
+    'max_epoch', 100, "Maximum number of training epochs.")
 tf.app.flags.DEFINE_integer(
     'batch_size', 16, "Number of videos to process in a batch.")
 tf.app.flags.DEFINE_integer(
@@ -124,14 +124,14 @@ def do_eval(
         # If data was partially filled in a batch, count only those
         num_valid = stop_idx - start_idx
         tmp_ = tmp_[0:num_valid]
-        print "[Debug] eval_correct={}".format(tmp_)
+        #print "[Debug] eval_correct={}".format(tmp_)
         true_count_per_batch = sess.run(tf.reduce_sum(tmp_))
         true_count += true_count_per_batch
         start_idx = stop_idx
 
     precision = float(true_count) / num_samples
-    common.writer("[Info] #samples=%d, #correct=%d (accuracy=%0.02f)",
-                  (num_samples, true_count, precision),
+    common.writer("accuracy=%.1f%% (%d/%d)",
+                  (precision * 100, true_count, num_samples),
                   logfile)
     return precision
 
@@ -146,9 +146,9 @@ def run_training(
         tag):
 
     # For training, subsample training/eval data sets (if >1)
-    subsample_rate = 1000
+    subsample_rate = 1
     # For periodic evaluation, subsample training/eval data sets (if >1)
-    eval_subsample_rate = 10
+    eval_subsample_rate = 30
 
     # mkdir
     if not os.path.exists(cfg.DIR_LOG):
@@ -258,7 +258,7 @@ def run_training(
                 start_time = time.time()
 
             if iters % FLAGS.validation_frequency == 0:
-                common.writer("[Info] training data eval:", (), logfile)
+                common.writer("[Info] training eval:", (), logfile, no_newline=True)
                 do_eval(sess,
                         eval_correct,
                         videos_ph,
@@ -268,7 +268,7 @@ def run_training(
                         train_labels,
                         logfile,
                         eval_subsample_rate=eval_subsample_rate)
-                common.writer("[Info] validation data eval:", (), logfile)
+                common.writer("[Info] validation eval:", (), logfile, no_newline=True)
                 precision = do_eval(
                     sess,
                     eval_correct,
@@ -279,7 +279,6 @@ def run_training(
                     eval_labels,
                     logfile,
                     eval_subsample_rate=eval_subsample_rate)
-                common.writer("[Info] accuracy: %.3f", precision, logfile)
 
             # Write checkpoint
             if iters % FLAGS.checkpoint_frequency == 0 or \
