@@ -28,8 +28,11 @@ tf.app.flags.DEFINE_float(
 tf.app.flags.DEFINE_integer(
     'summary_frequency', 100, "How often in iterations to write summary.")
 tf.app.flags.DEFINE_integer(
-    'checkpoint_frequency', 10,
-    "How often in epochs to evaluate and write checkpoint.")
+    'checkpoint_frequency', 1000,
+    "How often in iteraions to save checkpoint.")
+tf.app.flags.DEFINE_integer(
+    'validation_frequency', 10,
+    "How often in iteraions to evaluate.")
 
 def placeholder_inputs(batch_size):
     # Per https://www.tensorflow.org/versions/r0.11/api_docs/python/nn.html#conv3d
@@ -121,6 +124,7 @@ def do_eval(
         # If data was partially filled in a batch, count only those
         num_valid = stop_idx - start_idx
         tmp_ = tmp_[0:num_valid]
+        print "[Debug] eval_correct={}".format(tmp_)
         true_count_per_batch = sess.run(tf.reduce_sum(tmp_))
         true_count += true_count_per_batch
         start_idx = stop_idx
@@ -142,7 +146,7 @@ def run_training(
         tag):
 
     # For training, subsample training/eval data sets (if >1)
-    subsample_rate = 100
+    subsample_rate = 1000
     # For periodic evaluation, subsample training/eval data sets (if >1)
     eval_subsample_rate = 10
 
@@ -189,6 +193,7 @@ def run_training(
     videos_ph, labels_ph, keep_prob_ph = placeholder_inputs(FLAGS.batch_size)
 
     # Sets up model inference, training, etc
+    print "[Info] setting up model..."
     logits = model.inference(videos_ph, net_data, keep_prob_ph, tag)
     loss = model.loss(logits, labels_ph, tag)
     train_op = model.training(loss, learning_rate=FLAGS.learning_rate)
@@ -196,10 +201,12 @@ def run_training(
     init_op = tf.initialize_all_variables()
 
     # TensorFlow monitor
+    print "[Info] setting up monitor..."
     summary = tf.merge_all_summaries()
     saver = tf.train.Saver()
 
     # Initialize graph
+    print "[Info] initializing session..."
     sess = tf.Session()
     summary_writer = tf.train.SummaryWriter(cfg.DIR_SUMMARY, sess.graph)
     sess.run(init_op)
@@ -250,33 +257,35 @@ def run_training(
                 summary_writer.flush()
                 start_time = time.time()
 
-        # Write checkpoint
-        if epoch % FLAGS.checkpoint_frequency == 0 or \
-            epoch == FLAGS.max_epoch - 1:
-            checkpoint_file = os.path.join(cfg.DIR_CKPT, tag)
-            saver.save(sess, checkpoint_file, global_step=epoch)
-            common.writer("[Info] training data eval:", (), logfile)
-            do_eval(sess,
+            if iters % FLAGS.validation_frequency == 0:
+                common.writer("[Info] training data eval:", (), logfile)
+                do_eval(sess,
+                        eval_correct,
+                        videos_ph,
+                        labels_ph,
+                        keep_prob_ph,
+                        train_clips,
+                        train_labels,
+                        logfile,
+                        eval_subsample_rate=eval_subsample_rate)
+                common.writer("[Info] validation data eval:", (), logfile)
+                precision = do_eval(
+                    sess,
                     eval_correct,
                     videos_ph,
                     labels_ph,
                     keep_prob_ph,
-                    train_clips,
-                    train_labels,
+                    eval_clips,
+                    eval_labels,
                     logfile,
                     eval_subsample_rate=eval_subsample_rate)
-            common.writer("[Info] validation data eval:", (), logfile)
-            precision = do_eval(
-                sess,
-                eval_correct,
-                videos_ph,
-                labels_ph,
-                keep_prob_ph,
-                eval_clips,
-                eval_labels,
-                logfile,
-                eval_subsample_rate=eval_subsample_rate)
-            common.writer("[Info] accuracy: %.3f", precision, logfile)
+                common.writer("[Info] accuracy: %.3f", precision, logfile)
+
+            # Write checkpoint
+            if iters % FLAGS.checkpoint_frequency == 0 or \
+                epoch == FLAGS.max_epoch - 1:
+                checkpoint_file = os.path.join(cfg.DIR_CKPT, tag)
+                saver.save(sess, checkpoint_file, global_step=epoch)
 
         # Early stop
         to_stop, patience_count = common.early_stopping(
