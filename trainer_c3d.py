@@ -10,6 +10,7 @@ import sys
 import time
 from utils import common
 import configure as cfg
+import random
 
 # Training parameters
 FLAGS = tf.app.flags.FLAGS
@@ -31,7 +32,7 @@ tf.app.flags.DEFINE_integer(
     'checkpoint_frequency', 1000,
     "How often in iteraions to save checkpoint.")
 tf.app.flags.DEFINE_integer(
-    'validation_frequency', 10,
+    'validation_frequency', 100,
     "How often in iteraions to evaluate.")
 
 def placeholder_inputs(batch_size):
@@ -105,8 +106,13 @@ def do_eval(
 
     # Subsamples
     if eval_subsample_rate > 1:
-        all_data = all_data[::eval_subsample_rate]
-        all_labels = all_labels[::eval_subsample_rate]
+        sample_size = int(len(all_data) / float(eval_subsample_rate))
+        sample_indices = random.sample(
+                xrange(len(all_data)),
+                sample_size
+                )
+        all_data = slice_list(all_data, sample_indices)
+        all_labels = all_labels[sample_indices]
 
     num_samples = all_labels.shape[0]
     indices = np.arange(num_samples)
@@ -136,7 +142,8 @@ def do_eval(
     return precision
 
 def slice_list(in_list, np_array_indices):
-    return [x for i, x in enumerate(in_list) if i in np_array_indices]
+    #return [x for i, x in enumerate(in_list) if i in np_array_indices]
+    return [in_list[i] for i in np_array_indices]
 
 def run_training(
         pth_train_lst,
@@ -148,7 +155,7 @@ def run_training(
     # For training, subsample training/eval data sets (if >1)
     subsample_rate = 1
     # For periodic evaluation, subsample training/eval data sets (if >1)
-    eval_subsample_rate = 30
+    eval_subsample_rate = 100
 
     # mkdir
     if not os.path.exists(cfg.DIR_LOG):
@@ -178,8 +185,19 @@ def run_training(
 
     # Sample train/eval instances
     if subsample_rate > 1:
-        train_lst = train_lst[::subsample_rate]
-        eval_lst = eval_lst[::subsample_rate]
+        print "[Info] Sampling train/eval sets..."
+        sample_size = int(len(train_lst) / float(subsample_rate))
+        sample_indices = random.sample(
+                xrange(len(train_lst)),
+                sample_size
+                )
+        train_lst = slice_list(train_lst, sample_indices)
+        sample_size = int(len(eval_lst) / float(subsample_rate))
+        sample_indices = random.sample(
+                xrange(len(eval_lst)),
+                sample_size
+                )
+        eval_lst = slice_list(eval_lst, sample_indices)
 
     print "[Info] loading training data..."
     train_clips, train_labels = common.load_clips_labels(train_lst, train_dir)
