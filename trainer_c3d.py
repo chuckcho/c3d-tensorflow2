@@ -132,8 +132,7 @@ def do_eval(
         tmp_ = sess.run(eval_correct, feed_dict=fd)
         # If data was partially filled in a batch, count only those
         num_valid = stop_idx - start_idx
-        tmp_ = tmp_[0:num_valid]
-        #print "[Debug] eval_correct={}".format(tmp_)
+        tmp_ = tmp_[:num_valid]
         true_count_per_batch = sess.run(tf.reduce_sum(tmp_))
         true_count += true_count_per_batch
         start_idx = stop_idx
@@ -156,7 +155,7 @@ def run_training(
         tag):
 
     # For training, subsample training/eval data sets (if >1)
-    subsample_rate = 1
+    subsample_rate = 10
     # For periodic evaluation, subsample training/eval data sets (if >1)
     eval_subsample_rate = 100
 

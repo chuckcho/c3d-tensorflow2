@@ -1,7 +1,7 @@
 import os
 
 # Directories
-DIR_HOME    = '/media/6TB'
+DIR_HOME    = '/media/6TB/Videos'
 DIR_CKPT    = 'checkpoints'
 DIR_LST     = 'lists'
 DIR_MODEL   = 'models'
@@ -13,8 +13,8 @@ DIR_DATA_RAW   = os.path.join(DIR_HOME, 'UCF-101')
 DIR_DATA       = os.path.join(DIR_HOME, 'UCF-101')
 
 # Lists
-PTH_TRAIN_LST  = os.path.join(DIR_LST, 'train_01.lst')
-PTH_EVAL_LST   = os.path.join(DIR_LST, 'test_01.lst')
+PTH_TRAIN_LST  = '/media/6TB/Videos/UCF-101/train_test_split/c3d_ucf101_train_split1.txt'
+PTH_EVAL_LST   = '/media/6TB/Videos/UCF-101/train_test_split/c3d_ucf101_test_split1.txt'
 PTH_CATEGORIES = os.path.join(DIR_LST, 'categories.lst')
 #IMAGE_FORMAT   = '{:06d}.jpg'
 IMAGE_FORMAT   = 'image_{:04d}.jpg'
